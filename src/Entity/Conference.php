@@ -8,7 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ConferenceRepository::class)]
-class Conference
+class Conference implements \Stringable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -24,15 +24,21 @@ class Conference
     #[ORM\Column]
     private ?bool $isInternational = null;
 
+    public function __toString(): string
+    {
+        return $this->city.' '.$this->year;
+   }
+
+
     /**
-     * @var Collection<int, comment>
+     * @var Collection<int, Comment>
      */
-    #[ORM\OneToMany(targetEntity: comment::class, mappedBy: 'conference', orphanRemoval: true)]
-    private Collection $comment;
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'conference', orphanRemoval: true)]
+    private Collection $comments;
 
     public function __construct()
     {
-        $this->comment = new ArrayCollection();
+        $this->comments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -77,26 +83,26 @@ class Conference
     }
 
     /**
-     * @return Collection<int, comment>
+     * @return Collection<int, Comment>
      */
     public function getComment(): Collection
     {
-        return $this->comment;
+        return $this->comments;
     }
 
-    public function addComment(comment $comment): static
+    public function addComment(Comment $comment): static
     {
-        if (!$this->comment->contains($comment)) {
-            $this->comment->add($comment);
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
             $comment->setConference($this);
         }
 
         return $this;
     }
 
-    public function removeComment(comment $comment): static
+    public function removeComment(Comment $comment): static
     {
-        if ($this->comment->removeElement($comment)) {
+        if ($this->comments->removeElement($comment)) {
             // set the owning side to null (unless already changed)
             if ($comment->getConference() === $this) {
                 $comment->setConference(null);
