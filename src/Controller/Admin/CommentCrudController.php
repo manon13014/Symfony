@@ -22,36 +22,25 @@ class CommentCrudController extends AbstractCrudController
         return Comment::class;
     }
 
-    
+
     public function configureFields(string $pageName): iterable
     {
-       
-          yield AssociationField::new('conference');
+
+        yield AssociationField::new('conference');
         yield TextField::new('author');
         yield EmailField::new('email');
-       yield TextareaField::new('text')
+        yield TextareaField::new('text')
             ->hideOnIndex();
         yield TextField::new('photoFilename')
             ->onlyOnIndex();
-        $createdAt = DateTimeField::new('createdAt')
-            ->setFormTypeOptions([
-                'html5' => true,
-              'years' => range(date('Y'), date('Y') + 5),
-                'widget' => 'single_text',
-            ]);
-
-        if (Crud::PAGE_EDIT === $pageName) {
-           yield $createdAt->setFormTypeOption('disabled', true);
-        } else {
-            yield $createdAt;
-        }
+        yield DateTimeField::new('createdAt')->hideOnForm();
     }
 
     public function configureCrud(Crud $crud): Crud
-   {
+    {
         return $crud
             ->setEntityLabelInSingular('Conference Comment')
-           ->setEntityLabelInPlural('Conference Comments')
+            ->setEntityLabelInPlural('Conference Comments')
             ->setSearchFields(['author', 'text', 'email'])
             ->setDefaultSort(['createdAt' => 'DESC']);
     }

@@ -8,6 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Comment implements \Stringable
 {
     #[ORM\Id]
@@ -34,9 +35,11 @@ class Comment implements \Stringable
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $photoFilename = null;
     public function __toString(): string
-       {
+    {
         return (string) $this->getEmail();
-        }
+    }
+
+   
     public function getId(): ?int
     {
         return $this->id;
@@ -81,6 +84,12 @@ class Comment implements \Stringable
     public function getCreatedAt(): ?\DateTimeImmutable
     {
         return $this->createdAt;
+    }
+    
+    #[ORM\PrePersist]
+    public function setCreatedAtValue()
+    {
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function setCreatedAt(\DateTimeImmutable $createdAt): static

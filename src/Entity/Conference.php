@@ -2,12 +2,15 @@
 
 namespace App\Entity;
 
-use App\Repository\ConferenceRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ConferenceRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: ConferenceRepository::class)]
+#[UniqueEntity('slug')]
 class Conference implements \Stringable
 {
     #[ORM\Id]
@@ -24,11 +27,6 @@ class Conference implements \Stringable
     #[ORM\Column]
     private ?bool $isInternational = null;
 
-    public function __toString(): string
-    {
-        return $this->city.' '.$this->year;
-   }
-
 
     /**
      * @var Collection<int, Comment>
@@ -36,9 +34,23 @@ class Conference implements \Stringable
     #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'conference', orphanRemoval: true)]
     private Collection $comments;
 
+    #[ORM\Column(length: 255, unique: true)]
+    private ?string $slug = null;
+
     public function __construct()
     {
         $this->comments = new ArrayCollection();
+    }
+    public function __toString(): string
+    {
+        return $this->city . ' ' . $this->year;
+    }
+    public function computeSlug(SluggerInterface $slugger)
+    {
+        if (!$this->slug || '-' === $this->slug) {
+            $this->slug = (string) $slugger->slug($this->__toString())->lower();
+            //  $this->__toString() == (string) $this
+        }
     }
 
     public function getId(): ?int
@@ -85,7 +97,7 @@ class Conference implements \Stringable
     /**
      * @return Collection<int, Comment>
      */
-    public function getComment(): Collection
+    public function getComments(): Collection
     {
         return $this->comments;
     }
@@ -109,6 +121,17 @@ class Conference implements \Stringable
             }
         }
 
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): static
+    {
+        $this->slug = $slug;
         return $this;
     }
 }
