@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use Twig\Environment;
 use App\Entity\Comment;
 use App\Entity\Conference;
 use App\Form\CommentFormType;
