@@ -12,4 +12,9 @@ up:
 	docker compose up -d
 	symfony serve -d
 
+push:
+	git add .
+	git commit -m "$(m)"
+	git push
+
 .PHONY: tests
