@@ -19,9 +19,9 @@ class AdminCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        yield IdField::new('id')->hideOnIndex();
+        yield IdField::new('id')->hideOnForm();
         yield TextField::new('username');
-        yield TextEditorField::new('password');
+        yield TextField::new('password');
         yield ArrayField::new('roles');
     }
 }

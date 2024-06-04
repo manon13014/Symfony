@@ -12,6 +12,5 @@ class ConferenceControllerTest extends WebTestCase
         $crawler = $client->request('GET', '/');
         static::assertResponseIsSuccessful();
         static::assertSelectorTextContains('h2', 'Give your feedback!');
-        set_exception_handler(null);
     }
 }
