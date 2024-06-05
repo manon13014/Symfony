@@ -5,19 +5,20 @@ namespace App\Controller;
 use App\Entity\Comment;
 use App\Entity\Conference;
 use App\Form\CommentFormType;
+use App\Message\CommentMessage;
 use App\Repository\CommentRepository;
 use App\Repository\ConferenceRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class ConferenceController extends AbstractController
 {
-
     public function __construct(private readonly EntityManagerInterface $entityManager)
     {
     }
@@ -29,8 +30,9 @@ class ConferenceController extends AbstractController
             'conferences' => $conferenceRepository->findAll(),
         ]);
     }
+
     #[Route('/conference/{slug}', name: 'conference')]
-    public function show(Request $request, Conference $conference, CommentRepository $commentRepository, #[Autowire('%photo_dir%')] string $photoDir): Response
+    public function show(Request $request, Conference $conference, CommentRepository $commentRepository,MessageBusInterface $bus, #[Autowire('%photo_dir%')] string $photoDir): Response
     {
         $comment = new Comment();
         $form = $this->createForm(CommentFormType::class, $comment);
@@ -38,7 +40,7 @@ class ConferenceController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $comment->setConference($conference);
             if ($photo = $form['photo']->getData()) {
-                $filename = comment::setFilename($photo);
+                $filename = Comment::setFilename($photo);
                 try {
                     $photo->move($photoDir, $filename);
                 } catch (FileException $e) {
@@ -48,9 +50,18 @@ class ConferenceController extends AbstractController
             }
             $this->entityManager->persist($comment);
             $this->entityManager->flush();
+
+            $context = [
+                'user_ip' => $request->getClientIp(),
+                'user_agent' => $request->headers->get('user-agent'),
+                'referrer' => $request->headers->get('referer'),
+                'permalink' => $request->getUri(),
+            ];
+
+            $bus->dispatch(new CommentMessage(id: $comment->getId(), context: $context));
+
             return $this->redirectToRoute('conference', ['slug' => $conference->getSlug()]);
         }
-
 
         $offset = max(0, $request->query->getInt('offset', 0));
         $paginator = $commentRepository->getCommentPaginator($conference, $offset);

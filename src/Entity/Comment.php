@@ -2,26 +2,25 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
+use App\Entity\Enum\CommentStateEnum;
 use App\Entity\Trait\CreatedAtTrait;
 use App\Repository\CommentRepository;
-use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: CommentRepository::class)]
 #[ORM\HasLifecycleCallbacks]
 class Comment implements \Stringable
 {
     use CreatedAtTrait;
-    
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-   
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     private ?string $author = null;
@@ -44,12 +43,15 @@ class Comment implements \Stringable
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $photoFilename = null;
+
+    #[ORM\Column(length: 255, options: ['default' => CommentStateEnum::Submitted->value])]
+    private CommentStateEnum $state = CommentStateEnum::Submitted;
+
     public function __toString(): string
     {
         return (string) $this->getEmail();
     }
 
-   
     public function getId(): ?int
     {
         return $this->id;
@@ -91,7 +93,6 @@ class Comment implements \Stringable
         return $this;
     }
 
-
     public function getConference(): ?Conference
     {
         return $this->conference;
@@ -115,8 +116,21 @@ class Comment implements \Stringable
 
         return $this;
     }
-    public static function setFilename(UploadedFile $photo) : string 
+
+    public static function setFilename(UploadedFile $photo): string
     {
         return bin2hex(random_bytes(6)).'.'.$photo->guessExtension();
+    }
+
+    public function getState(): CommentStateEnum
+    {
+        return $this->state;
+    }
+
+    public function setState(CommentStateEnum $state): static
+    {
+        $this->state = $state;
+
+        return $this;
     }
 }

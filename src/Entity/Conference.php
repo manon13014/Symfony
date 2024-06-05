@@ -2,12 +2,12 @@
 
 namespace App\Entity;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ConferenceRepository;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\String\Slugger\SluggerInterface;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[ORM\Entity(repositoryClass: ConferenceRepository::class)]
 #[UniqueEntity('slug')]
@@ -27,7 +27,6 @@ class Conference implements \Stringable
     #[ORM\Column]
     private ?bool $isInternational = null;
 
-
     /**
      * @var Collection<int, Comment>
      */
@@ -41,10 +40,12 @@ class Conference implements \Stringable
     {
         $this->comments = new ArrayCollection();
     }
+
     public function __toString(): string
     {
-        return $this->city . ' ' . $this->year;
+        return $this->city.' '.$this->year;
     }
+
     public function computeSlug(SluggerInterface $slugger)
     {
         if (!$this->slug || '-' === $this->slug) {
@@ -132,6 +133,7 @@ class Conference implements \Stringable
     public function setSlug(string $slug): static
     {
         $this->slug = $slug;
+
         return $this;
     }
 }

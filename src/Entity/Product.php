@@ -11,7 +11,6 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\HasLifecycleCallbacks]
 class Product implements \Stringable
 {
-
     use CreatedAtTrait;
     use UpdatedAtTrait;
 
@@ -33,11 +32,10 @@ class Product implements \Stringable
     #[ORM\JoinColumn(nullable: false)]
     private ?Category $category = null;
 
-
     public function __toString(): string
     {
         return $this->name;
-   }
+    }
 
     public function getId(): ?int
     {
@@ -98,7 +96,4 @@ class Product implements \Stringable
 
         return $this;
     }
-
-
- 
 }
