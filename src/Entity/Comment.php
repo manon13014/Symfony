@@ -133,4 +133,13 @@ class Comment implements \Stringable
 
         return $this;
     }
+
+    public function getStateAsString(): string
+    {
+        return $this->state->value;
+    }
+    public function setStateAsString(string $state): void
+    {
+        $this->state = CommentStateEnum::from($state);
+    }
 }

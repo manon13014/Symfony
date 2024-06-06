@@ -11,6 +11,7 @@ tests:
 up:
 	docker compose up -d
 	symfony serve -d
+	symfony run -d --watch=config,src,templates,vendor symfony console messenger:consume async
 
 push:
 	git add .
